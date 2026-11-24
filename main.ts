@@ -4,7 +4,7 @@
 // dumbest thing my agent did today to /output/entry.txt, where the
 // competition's gate scorer and judge read it.
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 // The line: this morning my agent told me my TikTok video for the
 // bring-the-humans-03 bounty had been accepted, then had to admit it
@@ -23,5 +23,12 @@ if (/\n/.test(line)) {
 }
 
 mkdirSync(outDir, { recursive: true });
-writeFileSync(`${outDir}/entry.txt`, line, "utf8");
-console.log(`Wrote ${line.length} characters to ${outDir}/entry.txt`);
+const target = `${outDir}/entry.txt`;
+writeFileSync(target, line, "utf8");
+
+// Read it back: the entry is only valid if the exact line lands on disk.
+const written = readFileSync(target, "utf8");
+if (written !== line) {
+  throw new Error(`entry.txt mismatch: wrote ${line.length} chars, read back ${written.length}`);
+}
+console.log(`Wrote ${line.length} characters to ${target}`);
